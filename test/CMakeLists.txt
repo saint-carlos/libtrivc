@@ -1,0 +1,9 @@
+macro(add_cpp_test TEST_NAME)
+	add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
+	target_link_libraries(${TEST_NAME} trivc)
+	add_test(${TEST_NAME} ${TEST_NAME})
+endmacro(add_cpp_test)
+
+add_cpp_test(compiler_test)
+add_cpp_test(trivc_test)
+add_cpp_test(string_test)
