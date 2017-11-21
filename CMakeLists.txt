@@ -43,6 +43,7 @@ include_directories(
 
 set(SRCS
 	string.c
+	atomic.c
 	)
 
 add_library(trivc SHARED ${SRCS})
