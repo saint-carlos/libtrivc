@@ -227,6 +227,32 @@ void test_atomic()
 	test_atomic_bits();
 }
 
+void test_refcount()
+{
+	tvc_refcount_t ref;
+	uint64_t val = 17;
+	bool free;
+
+	tvc_refcount_init(&ref, val);
+	TVC_ASSERT(tvc_refcount_count(&ref) == val);
+	while (val > 1) {
+		tvc_refcount_get(&ref);
+		val++;
+		TVC_ASSERT(tvc_refcount_count(&ref) == val);
+		free = tvc_refcount_put(&ref);
+		TVC_ASSERT(!free);
+		val--;
+		TVC_ASSERT(tvc_refcount_count(&ref) == val);
+		free = tvc_refcount_put(&ref);
+		TVC_ASSERT(!free);
+		val--;
+		TVC_ASSERT(tvc_refcount_count(&ref) == val);
+	}
+	free = tvc_refcount_put(&ref);
+	TVC_ASSERT(free);
+	TVC_ASSERT(tvc_refcount_count(&ref) == 0);
+}
+
 int main(int argc, char** argv)
 {
 	/*
@@ -235,4 +261,5 @@ int main(int argc, char** argv)
 	 */
 	test_memory_barrier();
 	test_atomic();
+	test_refcount();
 }

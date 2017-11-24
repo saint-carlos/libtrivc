@@ -53,6 +53,21 @@ bool tvc_atomic_utest_and_set(tvc_atomic_t *a, uint64_t prev, uint64_t next);
 int64_t tvc_atomic_compare_and_swap(tvc_atomic_t *a, int64_t prev, int64_t next);
 uint64_t tvc_atomic_ucompare_and_swap(tvc_atomic_t *a, uint64_t prev, uint64_t next);
 
+/**
+ * struct tvc_refcount - refcount interface for atomic variable
+ *
+ * when tvc_refcount_put() returns 'true', it means that the refcount went to 0
+ * and the object being refcounted can be released.
+ */
+typedef struct tvc_refcount {
+	tvc_atomic_t count;
+} tvc_refcount_t;
+
+void tvc_refcount_init(tvc_refcount_t *refcount, uint64_t val);
+void tvc_refcount_get(tvc_refcount_t *refcount);
+bool tvc_refcount_put(tvc_refcount_t *refcount);
+uint64_t tvc_refcount_count(tvc_refcount_t *refcount);
+
 #ifdef __cplusplus
 }
 #endif

@@ -107,3 +107,24 @@ uint64_t tvc_atomic_ucompare_and_swap(tvc_atomic_t *a, uint64_t prev, uint64_t n
 	TVC_ASSERT((ret == true) == (expected == prev));
 	return expected;
 }
+
+void tvc_refcount_init(tvc_refcount_t *refcount, uint64_t val)
+{
+	tvc_atomic_uinit(&refcount->count, val);
+}
+
+void tvc_refcount_get(tvc_refcount_t *refcount)
+{
+	tvc_atomic_inc(&refcount->count);
+}
+
+bool tvc_refcount_put(tvc_refcount_t *refcount)
+{
+	uint64_t ret = tvc_atomic_dec(&refcount->count);
+	return ret == 0;
+}
+
+uint64_t tvc_refcount_count(tvc_refcount_t *refcount)
+{
+	return tvc_atomic_get(&refcount->count);
+}
