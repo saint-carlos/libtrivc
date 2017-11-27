@@ -115,8 +115,146 @@ void test_streq()
 	}
 }
 
+void assert_strpbrk0_notfound(const char* s, const char* accept)
+{
+	size_t len = strlen(tvc_str0(s));
+	const char* res = tvc_strpbrk0(s, accept);
+	if (s)
+		TVC_ASSERT(res == s + len);
+	TVC_ASSERT(*res == '\0');
+}
+
+void assert_strpbrk0_found(const char* s, const char* accept,
+		const char* expected)
+{
+	const char* res = tvc_strpbrk0(s, accept);
+	TVC_ASSERT(res == expected);
+}
+
+void test_strpbrk()
+{
+	char allchars[257];
+	init_allchar_str(allchars);
+
+	std::vector<const char*> strings = {
+		NULL,
+		"",
+		"a",
+		"aaa",
+		"abc",
+		"bac",
+		"aaabc",
+		"baaac",
+		"bcaaa",
+		"xyz",
+		"wxyz",
+		"the quick brown fox jumped over the lazy dog",
+		allchars,
+	};
+
+	for (const char* s: strings) {
+		for (const char* accept: strings) {
+			const char* res;
+			bool should_have = true;
+			if (!s || *s == '\0')
+				should_have = false;
+			if (!accept || *accept == '\0')
+				should_have = false;
+			if (should_have) {
+				res = strpbrk(s, accept);
+				if (!res)
+					should_have = false;
+			}
+
+			if (should_have)
+				assert_strpbrk0_found(s, accept, res);
+			else
+				assert_strpbrk0_notfound(s, accept);
+		}
+	}
+}
+
+void assert_str_foreach(const char* str, const char* delim)
+{
+	const char* current = str;
+	const char* begin;
+	const char* end;
+
+	TVC_STR_FOREACH(str, delim, &begin, &end) {
+		TVC_ASSERT(begin == current);
+		TVC_ASSERT(tvc_strpbrk0(begin, delim) == end);
+		current = end + 1;
+	}
+}
+
+void test_str_foreach()
+{
+	const char* begin;
+	const char* end;
+
+	char allchars[257];
+	init_allchar_str(allchars);
+
+	init_large_str(large1, sizeof(large1), "0123456789abcdef");
+
+	std::vector<const char*> strings = {
+		NULL,
+		"",
+		"a",
+		"aaa",
+		"abc",
+		"bac",
+		"aaabc",
+		"baaac",
+		"bcaaa",
+		"xyz",
+		"wxyz",
+		allchars,
+		" ",
+		",",
+		", ",
+		" ,",
+		",,",
+		"  ",
+		" ,      ,,,, , , , ,,",
+		"a ",
+		"a,",
+		" a",
+		",a",
+		"a,a,a",
+		"qw rb asf 3w[pwrb adf/	r",
+		"-092 t4mb2 -24 t9mnb",
+		"a a a",
+		"aa,aa aa,aa ,a,  ,   ,,,, ",
+		large1,
+	};
+
+	TVC_STR_FOREACH("test,test,test", ",", &begin, &end) {
+		TVC_ASSERT(strncmp(begin, "test", end - begin) == 0);
+	}
+
+	for (const char* delims: strings) {
+		TVC_STR_FOREACH(NULL, delims, &begin, &end) {
+			TVC_ASSERT(false);
+		}
+		TVC_STR_FOREACH("", delims, &begin, &end) {
+			TVC_ASSERT(false);
+		}
+		TVC_STR_FOREACH(delims, delims, &begin, &end) {
+			TVC_ASSERT(begin == end);
+		}
+	}
+	for (const char* s: strings) {
+		for (const char* delims: strings) {
+			assert_str_foreach(s, delims);
+		}
+	}
+}
+
 int main(int argc, char** argv)
 {
 	test_str0();
 	test_streq();
+	test_strpbrk();
+	test_str_foreach();
 }
