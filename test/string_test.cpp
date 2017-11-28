@@ -226,7 +226,6 @@ void test_str_foreach()
 		"-092 t4mb2 -24 t9mnb",
 		"a a a",
 		"aa,aa aa,aa ,a,  ,   ,,,, ",
-		large1,
 	};
 
 	TVC_STR_FOREACH("test,test,test", ",", &begin, &end) {
@@ -249,6 +248,16 @@ void test_str_foreach()
 			assert_str_foreach(s, delims);
 		}
 	}
+	assert_str_foreach(large1, NULL);
+	assert_str_foreach(large1, "");
+	assert_str_foreach(large1, allchars);
+	assert_str_foreach(large1, " ,");
+	assert_str_foreach(large1, "abc");
+	assert_str_foreach(NULL, large1);
+	assert_str_foreach("", large1);
+	assert_str_foreach(allchars, large1);
+	assert_str_foreach(", ", large1);
+	assert_str_foreach("abc", large1);
 }
 
 int main(int argc, char** argv)
