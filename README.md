@@ -19,19 +19,33 @@ Enter libtrivc, the trivial C stuff. It's there exactly to save you this trivial
 
 ## Dependencies
 
+runtime dependencies:
+
+* zlib
+
+Debian-based:
+
+	# sudo apt-get install zlib1g
+
+RHEL-based:
+
+	# sudo yum install zlib
+
 build dependencies:
 
 * cmake
 * make
 * gcc
+* libbsd
+* zlib
 
 Debian-based:
 
-	# sudo apt-get install cmake make gcc
+	# sudo apt-get install cmake make gcc libbsd-dev zlib1g-dev
 
 RHEL-based:
 
-	# sudo yum install cmake make gcc
+	# sudo yum install cmake make gcc libbsd-devel zlib-devel
 
 ## Build
 	# make

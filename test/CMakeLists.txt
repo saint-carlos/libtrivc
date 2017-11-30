@@ -1,6 +1,6 @@
 macro(add_cpp_test TEST_NAME)
 	add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
-	target_link_libraries(${TEST_NAME} trivc)
+	target_link_libraries(${TEST_NAME} trivc bsd)
 	add_test(${TEST_NAME} ${TEST_NAME})
 endmacro(add_cpp_test)
 
@@ -9,3 +9,4 @@ add_cpp_test(trivc_test)
 add_cpp_test(string_test)
 add_cpp_test(atomic_test)
 add_cpp_test(numeric_test)
+add_cpp_test(buf_test)

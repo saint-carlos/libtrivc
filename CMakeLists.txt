@@ -44,10 +44,11 @@ include_directories(
 set(SRCS
 	string.c
 	atomic.c
+	buf.c
 	)
 
 add_library(trivc SHARED ${SRCS})
-target_link_libraries(trivc)
+target_link_libraries(trivc z)
 install(TARGETS trivc LIBRARY DESTINATION lib64)
 
 # uninstall target
