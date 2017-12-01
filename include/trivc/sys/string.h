@@ -8,3 +8,7 @@
 #define STR_FOREACH	TVC_STR_FOREACH
 #define scnprintf	tvc_scnprintf
 #define vscnprintf	tvc_vscnprintf
+
+#define STKSTR		TVC_STKSTR
+#define STKSTRL		TVC_STKSTRL
+#define STKSTRN		TVC_STKSTRN

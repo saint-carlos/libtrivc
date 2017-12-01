@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+#include <alloca.h>
 #include <stdarg.h>
 #include <stdbool.h>
 
@@ -100,6 +102,62 @@ size_t tvc_scnprintf(char *buf, size_t len, const char *fmt, ...)
  */
 size_t tvc_vscnprintf(char *buf, size_t len, const char *fmt, va_list vl)
 		__tvc_printf(3, 0);
+
+/**
+ * TVC_STKSTRN() - allows formatting strings without preallocating them.
+ * @len:	maximum number of formatted characters.
+ * @formatter:	formats @args into a local stack buffer. signature:
+ *			size_t formatter(char *buf, size_t len, ...)
+ *		the formatter does not actually have to have this signature: it
+ *		can be more specific in the variadic arguments section.
+ *
+ * usage example:
+ *	// converts 0644 to "rw-r--r--"
+ *	size_t mode2perms(char *buf, size_t len, mode_t mode);
+ *
+ *	printf("perms1='%s' perms2='%s'",
+ *			TVC_STKSTRN(16, mode2perms, 0644),
+ *			TVC_STKSTRN(16, mode2perms, 0755));
+ *
+ * output:
+ * 	"perms1='rw-r--r--' perms2='rwxr-xr-x'"
+ *
+ * non-printing example:
+ *	haystack = "abc 30000 def"
+ *	strstr(haystack, TVC_STKSTRN(32, tvc_scnprintf, "%d", 300));
+ *
+ * output:
+ * 	haystack + 4
+ *
+ * @formatter converts the arguments into the string passed to it.
+ * it returns how many bytes were written, excluding any '\0' terminator.
+ * the formatter does not have to terminate the string with '\0'.
+ * formatters usually just call tvc_scnprintf(), which makes slightly stronger
+ * guarantees than the formatter requires.
+ *
+ * BE VERY CAREFUL WITH THE FORMATTER!
+ * make the formatter trivial or you will have problems!
+ *
+ * implementation notes:
+ * - the idea is to allocate a string on the caller's stack frame, and let the
+ *   caller print it.
+ * - we rely on the statement expression construct used to enclose this macro
+ *   not to start a new stack frame, so that the memory allocated by alloca(3)
+ *   lives until the caller's stack frame terminates.
+ * - global and static storage are avoided in order to avoid races.
+ * - thread local storage is inferior to this method given the above example.
+ */
+#define TVC_STKSTRN(len, formatter, args...) \
+	({ \
+		char *__res__ = (char *)alloca(len + 1); \
+		size_t __n = formatter(__res__, len + 1, ##args); \
+		if (__n > len) \
+			__n = len; \
+		__res__[__n] = '\0'; \
+		__res__; \
+	})
+#define TVC_STKSTR(formatter, args...) TVC_STKSTRN(32, formatter, ##args)
+#define TVC_STKSTRL(formatter, args...) TVC_STKSTRN(512, formatter, ##args)
 
 #ifdef __cplusplus
 }

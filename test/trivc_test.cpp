@@ -28,12 +28,15 @@ static void assert_str_contains(const char* haystack, const char* needle)
 
 void test_trace()
 {
-	TVC_TRACE("fmtstr %lu '%s'", 12UL, "arg");
+	int line;
+	TVC_TRACE("fmtstr %lu '%s'", 12UL, "arg"); line = __LINE__;
 
 	// this is about as much as we can reasonably test
 	assert_str_contains(trcbuf, "fmtstr 12 'arg'");
 	assert_str_contains(trcbuf, __TVC_FILEBASE__);
 	assert_str_contains(trcbuf, __func__);
+	assert_str_contains(trcbuf, TVC_STKSTR(tvc_scnprintf, "%u", getpid()));
+	assert_str_contains(trcbuf, TVC_STKSTR(tvc_scnprintf, "%d", line));
 }
 
 template <typename scalar_t>

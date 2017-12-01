@@ -362,6 +362,47 @@ void test_printf()
 	}
 }
 
+size_t mode2perms(char* buf, size_t len, mode_t mode)
+{
+	const char* src = NULL;
+	switch (mode) {
+	case 0644: src = "rw-r--r--"; break;
+	case 0755: src = "rwxr-xr-x"; break;
+	default: TVC_ASSERT(false); return 0;
+	}
+	size_t ret = tvc_umin(len, strlen(src));
+	memcpy(buf, src, ret);
+	return ret;
+}
+
+void test_stkstr()
+{
+	char buf[4096];
+	sprintf(buf, "perms1='%s' perms2='%s'",
+			TVC_STKSTRN(16, mode2perms, 0644),
+			TVC_STKSTRN(16, mode2perms, 0755));
+	TVC_ASSERT(tvc_streq(buf, "perms1='rw-r--r--' perms2='rwxr-xr-x'"));
+
+	const char* haystack = "abc 30000 def";
+	const char* str300 = strstr(haystack,
+			TVC_STKSTRN(32, tvc_scnprintf, "%d", 300));
+	TVC_ASSERT(str300 == haystack + 4);
+
+	/* test truncation */
+	sprintf(buf, "perms1='%s' perms2='%s'",
+			TVC_STKSTRN(3, mode2perms, 0644),
+			TVC_STKSTRN(6, mode2perms, 0755));
+	TVC_ASSERT(tvc_streq(buf, "perms1='rw-' perms2='rwxr-x'"));
+
+	init_large_str(large1, sizeof(large1), "0123456789abcdef");
+	sprintf(buf, "%s", TVC_STKSTR(tvc_scnprintf, "%s", large1));
+	TVC_ASSERT(strlen(buf) == 32);
+	TVC_ASSERT(strncmp(buf, large1, 32) == 0);
+	sprintf(buf, "%s", TVC_STKSTRL(tvc_scnprintf, "%s", large1));
+	TVC_ASSERT(strlen(buf) == 512);
+	TVC_ASSERT(strncmp(buf, large1, 512) == 0);
+}
+
 int main(int argc, char** argv)
 {
 	test_str0();
@@ -369,4 +410,5 @@ int main(int argc, char** argv)
 	test_strpbrk();
 	test_str_foreach();
 	test_printf();
+	test_stkstr();
 }
