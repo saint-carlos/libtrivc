@@ -6,3 +6,5 @@
 #define streq		tvc_streq
 #define strpbrk0	tvc_strpbrk0
 #define STR_FOREACH	TVC_STR_FOREACH
+#define scnprintf	tvc_scnprintf
+#define vscnprintf	tvc_vscnprintf

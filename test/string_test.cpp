@@ -7,6 +7,7 @@
 #include "trivc/trivc.h"
 
 #include "trivc/string.h"
+#include "trivc/numeric.h"
 
 void assert_str0eq(const char* s, const char* expected)
 {
@@ -260,10 +261,112 @@ void test_str_foreach()
 	assert_str_foreach("abc", large1);
 }
 
+size_t guarded_bufsz(size_t sz)
+{
+	return sizeof(unsigned) + sz + sizeof(unsigned);
+}
+
+void guarded_bufinit(char* buf, size_t sz)
+{
+	*(unsigned*)buf = 0xcafe;
+	*(unsigned*)(buf + sizeof(unsigned) + sz) = 0xbabe;
+}
+
+void guarded_bufcheck(const char* buf, size_t sz)
+{
+	TVC_ASSERT(*(unsigned*)buf == 0xcafe);
+	TVC_ASSERT(*(unsigned*)(buf + sizeof(unsigned) + sz) == 0xbabe);
+}
+
+char* guarded_bufextract(char* buf)
+{
+	return buf + sizeof(unsigned);
+}
+
+size_t guarded_bufszextract(size_t bufsz)
+{
+	return bufsz - 2 * sizeof(unsigned);
+}
+
+void __assert_formatted(const char* expect, size_t expect_len,
+		char* real_guarded, size_t real_guarded_sz, size_t real_len)
+{
+	char* real = guarded_bufextract(real_guarded);
+	size_t real_sz = guarded_bufszextract(real_guarded_sz);
+
+	if (real_sz == 0) {
+		TVC_ASSERT(real_len == 0);
+	} else {
+		size_t real_expect_len = tvc_umin(real_sz - 1, expect_len);
+		TVC_ASSERT(real_len == real_expect_len);
+		TVC_ASSERT(strncmp(real, expect, real_expect_len) == 0);
+	}
+
+	/* test buffer overflow / underflow */
+	guarded_bufcheck(real_guarded, real_guarded_sz);
+}
+
+void __assert_printf(const char* expect, size_t expect_len,
+		char* real_guarded, size_t real_guarded_sz, size_t real_len,
+		const char* fmt, ...) __tvc_printf(6, 7);
+
+void __assert_printf(const char* expect, size_t expect_len,
+		char* real_guarded, size_t real_guarded_sz, size_t real_len,
+		const char* fmt, ...)
+{
+	char* real = guarded_bufextract(real_guarded);
+	size_t real_sz = guarded_bufszextract(real_guarded_sz);
+
+	__assert_formatted(expect, expect_len, real_guarded,
+			real_guarded_sz, real_len);
+
+	va_list vl;
+	va_start(vl, fmt);
+	real_len = tvc_vscnprintf(real, real_sz, fmt, vl);
+	va_end(vl);
+	__assert_formatted(expect, expect_len, real_guarded,
+			real_guarded_sz, real_len);
+}
+
+#define ASSERT_PRINTF(expect, sz, fmt, args...) do { \
+			size_t formatted_len = snprintf(NULL, 0, fmt, ##args); \
+			size_t real_sz = sz >= 0 ? sz : formatted_len + 1 - sz; \
+			size_t real_guarded_sz = guarded_bufsz(real_sz); \
+			char real_guarded[real_guarded_sz]; \
+			guarded_bufinit(real_guarded, sizeof(real_guarded)); \
+			char* real = guarded_bufextract(real_guarded); \
+			size_t real_len = tvc_scnprintf(\
+					real, real_sz, \
+					fmt, ##args); \
+			__assert_printf(expect, real_len, \
+					real_guarded, real_guarded_sz, \
+					real_len, fmt, ##args); \
+		} while (false)
+
+void test_printf()
+{
+	char allchars[257];
+	init_allchar_str(allchars);
+
+	for (int n: { 0, 1, 2, 5, 10, 100, -1, -2, -5 }) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-zero-length"
+		ASSERT_PRINTF("", n, "");
+#pragma GCC diagnostic pop
+		ASSERT_PRINTF("abc", n, "abc");
+		ASSERT_PRINTF("-1234", n, "%d", -1234);
+		ASSERT_PRINTF("mystring", n, "%s", "mystring");
+		ASSERT_PRINTF(allchars, n, "%s", allchars);
+		ASSERT_PRINTF("mixed 0x3000 testing123", n, "mixed 0x%x %s",
+				0x3000, "testing123");
+	}
+}
+
 int main(int argc, char** argv)
 {
 	test_str0();
 	test_streq();
 	test_strpbrk();
 	test_str_foreach();
+	test_printf();
 }

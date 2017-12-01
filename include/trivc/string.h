@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdarg.h>
 #include <stdbool.h>
 
 #include <trivc/compiler.h>
@@ -64,6 +65,41 @@ void __tvc_str_foreach_advance(const char **beginp, const char **endp,
 	for (__tvc_str_foreach_init(beginp, endp, tvc_str0(str), delims); \
 			__tvc_str_foreach_valid(beginp, endp); \
 			__tvc_str_foreach_advance(beginp, endp, delims))
+
+/**
+ * tvc_scnprintf() - format unimportant strings
+ * @buf:	buffer to write to.
+ * @len:	number of bytes allocated in @buf.
+ * @fmt:	format string.
+ *
+ * tvc_scnprintf() is like snprintf(), except the returned number of bytes is
+ * the number of bytes actually formatted.
+ * this number does NOT include the terminating null.
+ * there is no way to determine whether or not the output was truncated.
+ * this is useful when formatting something for humans e.g. logging.
+ *
+ * tvc_scnprintf() exists because snprintf() has an inconvenient interface:
+ * if the buffer size is n and the formatted result is n + m bytes, snprintf
+ * will return n + m. but callers should not have to bother to check that
+ * _every time_, and so they just do:
+ * 	res = 0;
+ * 	res += snprintf(p + res, n - res, ...);
+ * 	res += snprintf(p + res, n - res, ...);
+ * 	...
+ * which could cause "n - sres" to go negative at some point.
+ * that negative, when passed back to the next snprintf, turns into a huge
+ * positive, which causes memory stomp.
+ * this is quite silly, since printf returns int (typeically 32 bit), so it
+ * can't actually write a full size_t (typically 64 bit).
+ */
+size_t tvc_scnprintf(char *buf, size_t len, const char *fmt, ...)
+		__tvc_printf(3, 4);
+
+/**
+ * tvc_vscnprintf() - va_list version of tvc_scnprintf()
+ */
+size_t tvc_vscnprintf(char *buf, size_t len, const char *fmt, va_list vl)
+		__tvc_printf(3, 0);
 
 #ifdef __cplusplus
 }
