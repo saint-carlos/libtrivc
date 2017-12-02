@@ -8,5 +8,7 @@
 #define tvc_bufcmp	bufcmp
 #define tvc_bufeq	bufeq
 #define tvc_bufcrc32	bufcrc32
+#define tvc_buffmt	buffmt
+#define TVC_BUFSTR	BUFSTR
 
 #define tvc_memeq	memeq

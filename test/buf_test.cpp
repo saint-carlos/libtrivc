@@ -6,6 +6,7 @@
 #define __TRIVC_UT
 #include "trivc/trivc.h"
 #include "trivc/compiler.h"
+#include "trivc/string.h"
 #include "trivc/numeric.h"
 
 #include "trivc/buf.h"
@@ -256,6 +257,45 @@ static void test_bufcrc()
 	run_bufcrc32(array_n, size_n, 0xca8529cc);
 }
 
+static void test_buffmt_bufstr_one(tvc_buf_t buf, const char* regex)
+{
+	char fmt[4096];
+	size_t ret;
+	std::regex r(regex, std::regex::grep);
+
+	ret = tvc_buffmt(fmt, sizeof(fmt), buf);
+	TVC_ASSERT(std::regex_match(fmt, r));
+	TVC_ASSERT(ret == strlen(fmt));
+
+	TVC_ASSERT(tvc_streq(fmt, TVC_BUFSTR(buf)));
+}
+
+static void test_buffmt_bufstr()
+{
+	char fmt[4096];
+	size_t ret;
+
+	// null bufffer
+	tvc_buf_t buf_null = tvc_bufget(NULL, 0);
+	test_buffmt_bufstr_one(buf_null, "{n=0 p=(nil)}");
+
+	// non-null buffer
+	int array[100];
+	FILL_ARR(array, 0xcafe);
+	tvc_buf_t buf_real = BUFGET_ARR(array);
+	/* anything more specific about the pointer doesn't seem to work */
+	test_buffmt_bufstr_one(buf_real, "{n=400 p=0x.* crc=0x2db2b2b1}");
+
+	// truncated output
+	ret = tvc_buffmt(fmt, 0, buf_null);
+	TVC_ASSERT(ret == 0);
+	ret = tvc_buffmt(fmt, 0, buf_real);
+	TVC_ASSERT(ret == 0);
+	const size_t tmp_sz = 2;
+	ret = tvc_buffmt(fmt, tmp_sz, buf_real);
+	TVC_ASSERT(ret == tmp_sz - 1);
+}
+
 #define BUF_TEST_STR "test"
 
 static void test_string_one(size_t sz)
@@ -318,6 +358,7 @@ int main(int argc, char** argv)
 	test_bufcmp_bufeq();
 	test_bufcpy();
 	test_bufcrc();
+	test_buffmt_bufstr();
 	test_string();
 	test_memeq();
 }

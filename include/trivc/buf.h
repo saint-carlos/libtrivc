@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <trivc/string.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -77,6 +79,20 @@ bool tvc_bufeq(tvc_buf_t a, tvc_buf_t b);
  * this uses the adler32 crc from zlib.
  */
 uint32_t tvc_bufcrc32(tvc_buf_t buf);
+
+/**
+ * tvc_buffmt() - format a buffer
+ *
+ * formatting logic and guarantees are same as for tvc_scnprintf().
+ */
+size_t tvc_buffmt(char *p, size_t n, tvc_buf_t buf);
+
+/**
+ * TVC_BUFSTR() - syntactic sugar for buffer printing
+ *
+ * used similarly to TVC_STKSTR().
+ */
+#define TVC_BUFSTR(buf) TVC_STKSTRN(48, tvc_buffmt, buf)
 
 /**
  * tvc_memeq() - compare 2 pieces of memory

@@ -5,6 +5,7 @@
 
 #include <trivc/trivc.h>
 #include <trivc/numeric.h>
+#include <trivc/string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,6 +66,17 @@ uint32_t tvc_bufcrc32(tvc_buf_t buf)
 	if (!buf.p)
 		return initial;
 	return adler32(initial, (const Bytef *)buf.p, (uInt)buf.n);
+}
+
+size_t tvc_buffmt(char *p, size_t n, tvc_buf_t buf)
+{
+	tvc_buf_check_sane(buf);
+	if (buf.p) {
+		return tvc_scnprintf(p, n, "{n=%zu p=%p crc=0x%x}",
+				buf.n, buf.p, tvc_bufcrc32(buf));
+	} else {
+		return tvc_scnprintf(p, n, "{n=%zu p=%p}", buf.n, buf.p);
+	}
 }
 
 bool tvc_memeq(const void *a, const void *b, size_t len)
