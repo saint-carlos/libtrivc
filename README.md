@@ -11,6 +11,12 @@ Now you have to recode all the trivial stuff that aren't part of libc: _ARRAY\_S
 
 Enter libtrivc, the trivial C stuff. It's there exactly to save you this trivial coding.
 
+Not only does it provide you with those trivial things, it also provides you with trivial things you didn't even know you needed, or knew you needed but never bothered with:
+
+* A struct for buffer + length! Yeah, man, 21st century rocks!
+* Useful primitives for safe formatting and concise formatting
+* A couple more primitives for string parsing
+
 ## Portability
 
 * libtrivc currently only supports Linux.
