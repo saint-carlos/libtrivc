@@ -49,7 +49,9 @@ set(SRCS
 
 add_library(trivc SHARED ${SRCS})
 target_link_libraries(trivc z)
-install(TARGETS trivc LIBRARY DESTINATION lib64)
+install(TARGETS trivc
+	LIBRARY
+	DESTINATION lib64)
 
 # uninstall target
 configure_file(

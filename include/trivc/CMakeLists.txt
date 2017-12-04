@@ -1,9 +1,14 @@
-install(FILES compiler.h DESTINATION include/trivc)
-install(FILES trivc.h DESTINATION include/trivc)
-install(FILES string.h DESTINATION include/trivc)
-install(FILES atomic.h DESTINATION include/trivc)
-install(FILES numeric.h DESTINATION include/trivc)
-install(FILES buf.h DESTINATION include/trivc)
-install(FILES stdcommon.h DESTINATION include/trivc)
+macro(install_header FILE_NAME)
+	install(FILES ${FILE_NAME}
+		DESTINATION include/trivc)
+endmacro(install_header)
+
+install_header(compiler.h)
+install_header(trivc.h)
+install_header(string.h)
+install_header(atomic.h)
+install_header(numeric.h)
+install_header(buf.h)
+install_header(stdcommon.h)
 
 add_subdirectory(sys)
