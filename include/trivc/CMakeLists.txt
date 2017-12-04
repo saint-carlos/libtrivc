@@ -1,5 +1,6 @@
 macro(install_header FILE_NAME)
 	install(FILES ${FILE_NAME}
+		COMPONENT headers
 		DESTINATION include/trivc)
 endmacro(install_header)
 

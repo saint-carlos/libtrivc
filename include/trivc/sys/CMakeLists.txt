@@ -1,5 +1,6 @@
 macro(install_sys_header FILE_NAME)
 	install(FILES ${FILE_NAME}
+		COMPONENT headers
 		DESTINATION include/trivc/sys)
 endmacro(install_sys_header)
 

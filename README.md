@@ -61,6 +61,18 @@ RHEL-based:
 	...
 	# sudo make uninstall
 
+Or via package:
+
+	# sudo yum install rpmrebuild
+	# make rpm
+
+or
+
+	# sudo apt-get install dpkg-dev
+	# make deb
+
+Then install the resulting packages from _build/_
+
 ## Use
 
 For general usage, include headers from _include/trivc/_.
@@ -107,6 +119,10 @@ A: Add _LD\_LIBRARY\_PATH=/usr/loca/lib:/usr/local/lib64_ to your environment wh
 Q: Passing and returning structs by value? Sacrilege!
 
 A: Structs such as _tvc\_buf\_t_ are largely a way to pack 2 arguments into one. They are no more expensive to pass to functions than passing their constituents individually, and not really more expensive to return then returning a pointer (well, at least on on architectures I care about). It's just simpler in many cases to pass them by value.
+
+Q: The rpm/deb packages install, but don't work
+
+A: Likely that is missing dependencies, which isn't implemented yet. Install dependencies manually as specified above.
 
 Q: So you have a struct for buffer, which is supposed to prevent passing around buffer + length everywhere, but none of your interfaces uses it... what's the point?
 

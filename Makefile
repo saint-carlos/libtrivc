@@ -18,8 +18,9 @@ install: prepare
 uninstall:
 	$(MAKE) -C $(BUILD_DIR) uninstall
 
-rpm: prepare
-	$(MAKE) -C $(BUILD_DIR) rpm
+deb rpm package: prepare
+	cd $(BUILD_DIR) && cpack
+	$(MAKE) -C $(BUILD_DIR) package-fix
 
 prepare:
 	if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
