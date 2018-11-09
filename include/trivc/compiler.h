@@ -61,8 +61,8 @@
  *
  * examples:
  * #define AA aa
- * TVC_STR(aa) returns "aa"
- * TVC_STR(AA) returns "aa"
+ * TVC_PSTR(aa) returns "aa"
+ * TVC_PSTR(AA) returns "aa"
  */
 #define TVC_PSTR(__x) TVC_STR(__x)
 
